@@ -1,0 +1,282 @@
+-- JoinRays Duels Menu
+-- Safe Admin/Test GUI
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+
+------------------------------------------------
+-- GUI
+------------------------------------------------
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "JoinRaysDuels"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0,520,0,430)
+main.Position = UDim2.new(.5,-260,.5,-215)
+main.BackgroundColor3 = Color3.fromRGB(25,25,25)
+main.BorderSizePixel = 0
+main.Parent = gui
+
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0,15)
+corner.Parent = main
+
+
+local bg = Instance.new("ImageLabel")
+bg.Size = UDim2.fromScale(1,1)
+bg.BackgroundTransparency = 1
+
+-- Put your own uploaded background image ID here
+bg.Image = "rbxassetid://YOUR_IMAGE_ID"
+
+bg.ImageTransparency = .5
+bg.Parent = main
+
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,0,0,50)
+title.BackgroundTransparency = 1
+title.Text = "⚔️ JoinRays Duels ⚔️"
+title.TextScaled = true
+title.TextColor3 = Color3.new(1,1,1)
+title.Parent = main
+
+
+------------------------------------------------
+-- Dragging
+------------------------------------------------
+
+local dragging = false
+local dragStart
+local startPos
+
+
+title.InputBegan:Connect(function(input)
+
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = main.Position
+	end
+
+end)
+
+
+title.InputEnded:Connect(function(input)
+
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+
+end)
+
+
+UserInputService.InputChanged:Connect(function(input)
+
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+
+		local delta = input.Position - dragStart
+
+		main.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+
+	end
+
+end)
+
+
+
+------------------------------------------------
+-- Button Creator
+------------------------------------------------
+
+local function createButton(text,y)
+
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(.8,0,0,35)
+	b.Position = UDim2.new(.1,0,0,y)
+	b.BackgroundColor3 = Color3.fromRGB(55,55,55)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.TextScaled = true
+	b.Text = text
+	b.Parent = main
+
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0,8)
+	c.Parent = b
+
+	return b
+
+end
+
+
+
+------------------------------------------------
+-- Buttons
+------------------------------------------------
+
+local infiniteJump = createButton("Infinite Jump: OFF",70)
+local tpDown = createButton("Teleport Down",115)
+local autoPlay = createButton("Auto Play: OFF",160)
+local autoGrab = createButton("Auto Grab: OFF",205)
+local carrySpeed = createButton("Carry Speed: 31",250)
+local animations = createButton("Animations",295)
+local smooth = createButton("Movement Smooth: OFF",340)
+
+
+
+------------------------------------------------
+-- Infinite Jump
+------------------------------------------------
+
+local jumpEnabled = false
+
+
+infiniteJump.MouseButton1Click:Connect(function()
+
+	jumpEnabled = not jumpEnabled
+
+	infiniteJump.Text =
+		"Infinite Jump: "..(jumpEnabled and "ON" or "OFF")
+
+end)
+
+
+UserInputService.JumpRequest:Connect(function()
+
+	if jumpEnabled then
+
+		local character = player.Character
+
+		if character and character:FindFirstChild("Humanoid") then
+
+			character.Humanoid:ChangeState(
+				Enum.HumanoidStateType.Jumping
+			)
+
+		end
+
+	end
+
+end)
+
+
+
+------------------------------------------------
+-- Teleport Down
+------------------------------------------------
+
+tpDown.MouseButton1Click:Connect(function()
+
+	local character = player.Character
+
+	if character and character:FindFirstChild("HumanoidRootPart") then
+
+		character.HumanoidRootPart.CFrame *=
+			CFrame.new(0,-50,0)
+
+	end
+
+end)
+
+
+
+------------------------------------------------
+-- Toggles
+------------------------------------------------
+
+local playing = false
+local grabbing = false
+local smoothing = false
+
+
+autoPlay.MouseButton1Click:Connect(function()
+
+	playing = not playing
+
+	autoPlay.Text =
+		"Auto Play: "..(playing and "ON" or "OFF")
+
+end)
+
+
+
+autoGrab.MouseButton1Click:Connect(function()
+
+	grabbing = not grabbing
+
+	autoGrab.Text =
+		"Auto Grab: "..(grabbing and "ON" or "OFF")
+
+end)
+
+
+
+carrySpeed.MouseButton1Click:Connect(function()
+
+	carrySpeed.Text = "Carry Speed: 31"
+
+end)
+
+
+
+animations.MouseButton1Click:Connect(function()
+
+	animations.Text = "Animations Open"
+
+end)
+
+
+
+smooth.MouseButton1Click:Connect(function()
+
+	smoothing = not smoothing
+
+	smooth.Text =
+		"Movement Smooth: "..(smoothing and "ON" or "OFF")
+
+end)
+
+
+
+------------------------------------------------
+-- FPS + Ping Display
+------------------------------------------------
+
+local stats = Instance.new("TextLabel")
+stats.Size = UDim2.new(0,200,0,50)
+stats.Position = UDim2.new(0,10,1,-60)
+stats.BackgroundTransparency = 1
+stats.TextColor3 = Color3.new(1,1,1)
+stats.TextScaled = true
+stats.Parent = gui
+
+
+local last = tick()
+
+
+RunService.RenderStepped:Connect(function()
+
+	local fps = math.floor(1/(tick()-last))
+	last = tick()
+
+	local ping = math.floor(player:GetNetworkPing()*1000)
+
+	stats.Text =
+		"FPS: "..fps..
+		"\nPing: "..ping.."ms"
+
+end)
