@@ -1,5 +1,5 @@
 -- JoinRays Duels Menu
--- Safe Admin/Test GUI
+-- steal a brainrot duels script
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
